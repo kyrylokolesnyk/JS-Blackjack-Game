@@ -1,0 +1,351 @@
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Blackjack(by Kyrylo)</title>
+		<style>
+			body {
+				background-image: url("assets/table_fabric.jpg");
+				background-size: 30%;
+			}
+			
+			.none-hidden {
+				display: none;
+			}
+			
+			.overlay-fade {
+				background: radial-gradient(circle, rgba(255,255,255,0) 50%, rgba(0,0,0,0.5) 100%);
+				width: 100%;
+				height: 100%;
+				position: fixed;
+				top: 0; right: 0; bottom: 0; left: 0;
+				margin: auto;
+			}
+			
+			.popup-overlay {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				z-index: 100;
+				background: rgba(0,0,0,0.6);
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 100px;
+				font-family: Garamond, serif;
+				font-weight: bold;
+				font-size: 96px;
+			}
+			
+			.message-box-red {
+				background-color: rgba(148,0,0,0.8);
+				padding: 10px 100px;
+				border-radius: 250px;
+				box-shadow: 0px 0px 150px 0px #ffee00;
+			}
+			
+			.message-box-green {
+				background-color: rgba(23,140,0,0.80);
+				padding: 10px 100px;
+				border-radius: 250px;
+				box-shadow: 0px 0px 150px 0px #ffee00;
+			}
+			
+			.message-box-blue {
+				background-color: rgba(0,72,140,0.80);
+				padding: 10px 100px;
+				border-radius: 250px;
+				box-shadow: 0px 0px 150px 0px #ffee00;
+			}
+		
+			#game-field {
+				text-align: center;
+				margin-top: 20px;
+			}
+			
+			#game-center-wrapper {
+				margin: auto;
+				background-color: transparent;
+				width: 900px;
+				height: 600px;
+				padding: 50px;
+			}
+			
+			.card-wrapper {
+				position: absolute;
+				transition: top 1s ease-in-out, left 1s ease-in-out, transform 0.5s;
+				z-index: 1;
+			}
+			
+			.card-container {
+				background-color: transparent;
+				width: 175px;
+				height: 245px;
+				perspective: 1000px;
+			}
+			
+			.card {
+				position: relative;
+				width: 100%;
+				height: 100%;
+				transition: transform 0.5s;
+				transform-style: preserve-3d;
+				border-radius: 5%;
+				border: 2px solid black;
+				box-sizing: border-box;
+				background-color: white;
+			}
+			
+			.card-front, .card-back {
+				position: absolute;
+				width: 100%;
+				height: 100%;
+				backface-visibility: hidden;
+				border-radius: 5%;
+			}
+			
+			.card-front {
+				background-color: white;
+				position: absolute;
+				display: flex;
+				justify-content: space-between;
+				align-items: flex-start;
+				font-family: Garamond, serif;
+				font-weight: bold;
+			}
+			
+			.card-back {
+				background-color: red;
+				transform: rotateY(180deg);
+			}
+			
+			.card-back > img {
+				width: 100%;
+				height: 100%;
+				border-radius: 5%;
+			}
+			
+			.card-corner {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				font-size: 28px;
+			}
+			
+			.card-corner.bottom {
+				transform: rotate(180deg);
+				align-self: flex-end;
+			}
+			
+			.card-symbol {
+				font-size: 36px;
+				margin-top: -8px;
+			}
+			
+			.card-middle-symbol {
+				align-self: center;
+				font-size: 86px;
+			}
+			
+			.hand {
+				position: relative;
+				display: flex;
+				height: 245px;
+				width: fit-content;
+				left: 250px;
+				margin-top: 40px;
+				margin-bottom: 40px;
+			}
+			
+			.hand .card-wrapper {
+				margin-left: -125px;
+			}
+			
+			.hand .card-wrapper:first-child {
+				margin-left: 0;
+			}
+			
+			#dealer-hand {
+				margin-top: 0px;
+			}
+			
+			#player-hand {
+				margin-bottom: 0px;
+			}
+			
+			.button-container {
+				display: flex;
+				justify-content: space-around;
+				gap: 200px;
+			}
+			
+			.game-button {
+				width: 200px;
+				height: 70px;
+				font-family: Georgia;
+				font-weight: bold;
+				font-size: 48px;
+				background-color: rgba(0,0,0,0.4);
+				border-radius: 25px;
+				border: 4px solid #8a792e;
+			}
+			
+			.game-button:hover {
+				background-color: #FAE502;
+				box-shadow: 0px 0px 25px 5px #ffee00;
+			}
+			
+			.game-button:active {
+				background-color: #837801;
+			}
+			
+			.golden-text {
+				display: inline;
+				top: 0px;
+				left: 10px;
+				background: linear-gradient(0deg, rgba(69,60,23,1) 17%, rgba(91,80,30,1) 20%, rgba(138,121,46,1) 29%, rgba(91,80,30,1) 35%, rgba(79,69,26,1) 38%, rgba(99,87,33,1) 40%, rgba(173,151,57,1) 45%, rgba(238,208,78,1) 100%);
+				background-clip: text;
+				color: transparent;
+				filter: drop-shadow(-0.1px -0.3px #FFFDD1) drop-shadow(1.5px 1.5px black);
+			}
+			
+			.game-button:disabled {
+				width: 200px;
+				height: 70px;
+				font-family: Georgia;
+				font-weight: bold;
+				font-size: 48px;
+				background-color: rgba(0,0,0,0.4);
+				border-radius: 25px;
+				border: 4px solid #8a792e;
+				filter: grayscale(80%);
+			}
+			
+			.game-button:disabled:hover {
+				box-shadow: 0px 0px 0px 0px gray;
+			}
+			
+			.game-button:disabled:active {
+			}
+			
+			.score-container {
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				gap: 350px;
+				position: absolute;
+				transform: translate(-10%, -65%);
+			}
+			
+			.score-wrapper {
+				display: flex;
+				flex-direction: row;
+				justify-content: flex-start;
+				align-items: center;
+				font-family: Garamond;
+				font-weight: bold;
+				font-size: 48px;
+				gap: 10px;
+			}
+			
+			.score-bubble {
+				border: 4px solid #8a792e;
+				border-radius: 50%;
+				width: 60px;
+				height: 60px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				background-color: rgba(0,0,0,0.4);
+			}
+			
+			.deck-container {
+				display: flex;
+				flex-direction: row;
+				justify-content: center;
+				align-items: center;
+				font-family: Garamond;
+				font-weight: bold;
+				font-size: 48px;
+				gap: 10px;
+				position: absolute;
+				transform: translate(750px, -50px);
+				margin-right: 100px;
+			}
+			
+			.menu-button {
+				width: 350px;
+				height: 125px;
+				font-family: Georgia;
+				font-weight: bold;
+				font-size: 52px;
+				background-color: rgba(0,0,0,0.4);
+				border-radius: 100px;
+				border: 4px solid #8a792e;
+			}
+			
+			.menu-button:hover {
+				background-color: #FAE502;
+				box-shadow: 0px 0px 25px 5px #ffee00;
+			}
+			
+			.menu-button:active {
+				background-color: #837801;
+			}
+			
+			#logo {
+				font-size: 128px;
+				display: flex;
+				flex-direction: column;
+			}
+			
+			#logo > p {
+				text-align: right;
+				font-size: 48px;
+				margin-top: -30px;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<div class="overlay-fade">
+		<div id="menu-popup" class="popup-overlay">
+			<div id="logo">
+				<span class="golden-text">BLACKJACK</span>
+				<p class="golden-text">by Kyrylo</p>
+			</div>
+			<div id="message-box-div" class="none-hidden">
+				<span id="message-text" class="golden-text">Dealer wins! Player busted!</span>
+			</div>
+			<button id="start-game" class="menu-button"><span class="golden-text">Start Game</span></button>
+			<button id="play-again" class="menu-button none-hidden"><span class="golden-text">Play Again</span></button>
+		</div>
+			<div id="game-field" class="none-hidden">
+				<div id="game-center-wrapper">
+					<div class="deck-container">
+						<span class="golden-text">Deck:</span>
+						<span id="deck-text" class="golden-text">52</span>
+					</div>
+					<div id="dealer-hand" class="hand"></div>
+					<div class="score-container">
+						<div class="score-wrapper">
+							<div class="golden-text">Dealer</div>
+							<div class="score-bubble"><span id="dealer-score" class="golden-text">0</span></div>
+						</div>
+						<div class="score-wrapper">
+							<div class="golden-text">Player</div>
+							<div class="score-bubble"><span id="player-score" class="golden-text">0</span></div>
+						</div>
+					</div>
+					<div class="button-container">
+						<button class="game-button" onclick="stand()"><span class="golden-text">Stand</span></button>
+						<button class="game-button" onclick="hit()"><span class="golden-text">Hit</span></button>
+					</div>
+					<div id="player-hand" class="hand"></div>
+				</div>
+			</div>
+		</div>
+		<script src="appBlackjack_Kyrylo.js"></script>
+	</body>
+</html>
